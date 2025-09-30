@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday, My Queen! ❤️</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary-pink': '#FF69B4', // Hot Pink
+                        'secondary-red': '#FF4500', // Orange Red
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: 0, transform: 'scale(0.8)' },
+                            '100%': { opacity: 1, transform: 'scale(1)' },
+                        },
+                        pulseHeart: {
+                            '0%, 100%': { transform: 'scale(1)' },
+                            '50%': { transform: 'scale(1.05)' },
+                        },
+                        popAndFade: {
+                            '0%': { opacity: 0, transform: 'translateY(0) scale(0.8)' },
+                            '20%': { opacity: 1, transform: 'translateY(-10px) scale(1.1)' },
+                            '100%': { opacity: 0, transform: 'translateY(-50px) scale(0.9)' },
+                        },
+                        atmosphereShift: {
+                            '0%': { transform: 'scale(1) translate(0%, 0%)', opacity: 0.8 },
+                            '50%': { transform: 'scale(1.1) translate(-5%, 5%)', opacity: 0.9 },
+                            '100%': { transform: 'scale(1) translate(0%, 0%)', opacity: 0.8 },
+                        }
+                    },
+                    animation: {
+                        fadeIn: 'fadeIn 2s ease-out forwards',
+                        pulseHeart: 'pulseHeart 2s ease-in-out infinite',
+                        popAndFade: 'popAndFade 1.5s ease-out forwards',
+                        atmosphereShift: 'atmosphereShift 30s ease-in-out infinite alternate',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* --- CORE EFFECTS STYLES --- */
+
+        /* Floating Heart (Large, Main Effect) */
+        .heart-particle {
+            position: absolute;
+            background-color: var(--heart-color);
+            width: var(--heart-size);
+            height: var(--heart-size);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 10;
+        }
+
+        .heart-particle::before, .heart-particle::after {
+            content: "";
+            position: absolute;
+            background: inherit;
+            width: inherit;
+            height: inherit;
+            border-radius: 50%;
+        }
+
+        .heart-particle::before { top: calc(var(--heart-size) * -0.5); left: 0; }
+        .heart-particle::after { left: calc(var(--heart-size) * 0.5); top: 0; }
+        
+        @keyframes float {
+            0% { transform: translateY(0vh) translateX(0%) scale(1); opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { transform: translateY(-100vh) translateX(200px) scale(0.5); opacity: 0; }
+        }
+
+        /* --- NEW INTERACTIVE TRAIL STYLES --- */
+
+        /* Trail Particle (Small, Interactive Effect) */
+        .trail-particle {
+            position: absolute;
+            background-color: var(--trail-color);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 5; /* Behind main text, but above background */
+            box-shadow: 0 0 8px 3px var(--trail-color); /* The glowing effect */
+            animation: trailFade 1s ease-out forwards;
+        }
+
+        @keyframes trailFade {
+            0% { opacity: 1; transform: scale(0.2); }
+            50% { opacity: 0.8; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+
+        /* Interactive Message */
+        .touch-message {
+            position: absolute;
+            z-index: 50;
+            font-weight: bold;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        /* Romantic Atmosphere */
+        #romantic-atmosphere {
+            background: radial-gradient(circle at 50% 50%, 
+                rgba(255, 105, 180, 0.25) 0%, 
+                rgba(148, 0, 211, 0.2) 35%, 
+                rgba(0, 0, 0, 0.8) 70% 
+            );
+            filter: blur(100px);
+        }
+    </style>
+</head>
+<body class="bg-black min-h-screen flex items-center justify-center p-4 overflow-hidden relative font-sans">
+
+    <!-- Romantic Atmosphere Layer (Z-index 0) -->
+    <div id="romantic-atmosphere" class="fixed inset-0 z-0 animate-atmosphereShift"></div>
+    
+    <!-- The main message container (Z-index 20) -->
+    <div class="text-center z-20">
+        <h1 class="text-6xl sm:text-7xl md:text-8xl font-extrabold text-primary-pink animate-fadeIn mb-6 animate-pulseHeart" 
+            style="animation-delay: 2s; text-shadow: 0 0 20px rgba(255, 105, 180, 1);">
+            Happy Birthday Wifey!
+        </h1>
+        <p class="text-2xl sm:text-3xl md:text-4xl text-white animate-fadeIn" 
+           style="animation-delay: 3s; text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);">
+            I love you so much ❤️
+        </p>
+    </div>
+
+    <!-- JavaScript for all effects -->
+    <script>
+        const body = document.body;
+        // Heart colors are slightly brighter for better visibility
+        const heartColors = ['#FFC0CB', '#FF1493', '#DC143C', '#DA70D6']; 
+        // Trail colors for a starry effect
+        const trailColors = ['#FFFFFF', '#FFD700', '#FFB6C1']; 
+
+        // --- CORE HEART GENERATION LOGIC ---
+
+        function createHeart(isBurst = false, x = 0, y = 0) {
+            const heart = document.createElement('div');
+            heart.classList.add('heart-particle');
+
+            const size = Math.floor(Math.random() * 20) + 10;
+            const color = heartColors[Math.floor(Math.random() * heartColors.length)];
+            let duration = Math.random() * 10 + 5; 
+
+            heart.style.setProperty('--heart-size', `${size}px`);
+            heart.style.setProperty('--heart-color', color);
+
+            if (isBurst) {
+                // Burst effect: hearts fly out from the center
+                duration = Math.random() * 2 + 1; // Short burst duration
+                heart.style.top = `${window.innerHeight / 2}px`;
+                heart.style.left = `${window.innerWidth / 2}px`;
+                
+                // Randomize trajectory and scale
+                const burstX = Math.random() * 400 - 200; // -200 to 200
+                const burstY = Math.random() * 400 - 200;
+                heart.style.animation = `burst ${duration}s ease-out forwards`;
+
+                // Add temporary burst keyframes dynamically
+                const styleSheet = document.styleSheets[0];
+                try {
+                    styleSheet.insertRule(`
+                        @keyframes burst {
+                            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+                            100% { transform: translate(${burstX}px, ${burstY}px) scale(0.1); opacity: 0; }
+                        }
+                    `, styleSheet.cssRules.length);
+                } catch (e) { console.error("Could not insert burst keyframe."); }
+            } else {
+                // Floating effect
+                const startX = Math.random() * (window.innerWidth - size);
+                const startY = window.innerHeight;
+                heart.style.left = `${startX}px`;
+                heart.style.top = `${startY}px`;
+                heart.style.animation = `float ${duration}s ease-in forwards`;
+            }
+            
+            body.appendChild(heart);
+
+            setTimeout(() => { heart.remove(); }, duration * 1000);
+        }
+
+        // --- NEW: HEART BURST ON PAGE LOAD ---
+        function triggerHeartBurst() {
+            const burstCount = 80; // Number of hearts in the burst
+            for (let i = 0; i < burstCount; i++) {
+                // Delay each heart slightly for a dispersed effect
+                setTimeout(() => createHeart(true), i * 10); 
+            }
+        }
+
+        // Regular heart shower (slower, continuous floating)
+        function startHeartShower() {
+            const showerInterval = setInterval(createHeart, 150); 
+            setTimeout(() => { clearInterval(showerInterval); }, 60000); 
+        }
+
+        // Start effects after main text animation finishes
+        setTimeout(triggerHeartBurst, 4000); 
+        setTimeout(startHeartShower, 4500); 
+
+
+        // --- INTERACTIVE TOUCH/CLICK MESSAGE LOGIC ---
+        function createTouchMessage(event) {
+            const x = event.clientX || (event.touches ? event.touches[0].clientX : 0);
+            const y = event.clientY || (event.touches ? event.touches[0].clientY : 0);
+            if (!x || !y) return; 
+
+            const message = document.createElement('div');
+            message.textContent = "I love you so much! 🥰";
+            message.classList.add(
+                'touch-message', 'text-lg', 'sm:text-xl', 'text-primary-pink', 'shadow-lg', 'animate-popAndFade' 
+            );
+            
+            message.style.left = `${x - 100}px`; 
+            message.style.top = `${y - 20}px`;
+            message.style.textShadow = '0 0 10px rgba(255, 105, 180, 1)';
+
+            body.appendChild(message);
+            setTimeout(() => { message.remove(); }, 1500); 
+        }
+
+        // Attach event listeners for the single message tap
+        document.body.addEventListener('click', createTouchMessage);
+        document.body.addEventListener('touchstart', createTouchMessage);
+
+
+        // --- NEW: INTERACTIVE MOUSE/TOUCH TRAIL LOGIC ---
+        let isTouching = false;
+
+        function createTrailParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.classList.add('trail-particle');
+
+            const size = Math.floor(Math.random() * 5) + 3; // 3px to 8px
+            const color = trailColors[Math.floor(Math.random() * trailColors.length)];
+            
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.setProperty('--trail-color', color);
+
+            // Position centered on the cursor/touch point
+            particle.style.left = `${x - size / 2}px`;
+            particle.style.top = `${y - size / 2}px`;
+
+            body.appendChild(particle);
+
+            // Particle removal matches its fade animation duration
+            setTimeout(() => { particle.remove(); }, 1000); 
+        }
+
+        function handleMove(event) {
+            // Check if it's a touch move OR a mouse move after the body is clicked
+            if (event.type === 'touchmove' || event.buttons === 1) { 
+                event.preventDefault(); // Prevent scrolling on touch devices
+                const x = event.clientX || (event.touches ? event.touches[0].clientX : 0);
+                const y = event.clientY || (event.touches ? event.touches[0].clientY : 0);
+                if (x && y) {
+                    createTrailParticle(x, y);
+                }
+            }
+        }
+        
+        // Use move events to continuously create the trail
+        document.body.addEventListener('mousemove', handleMove);
+        document.body.addEventListener('touchmove', handleMove);
+        
+    </script>
+</body>
+</html>
