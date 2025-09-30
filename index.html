@@ -1,334 +1,111 @@
+html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Happy Birthday, My Queen! ❤️</title>
-    <!-- Load Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- NEW: Tone.js for generating background music -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'primary-pink': '#FF69B4', // Hot Pink
-                        'secondary-red': '#FF4500', // Orange Red
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    keyframes: {
-                        fadeIn: {
-                            '0%': { opacity: 0, transform: 'scale(0.8)' },
-                            '100%': { opacity: 1, transform: 'scale(1)' },
-                        },
-                        pulseHeart: {
-                            '0%, 100%': { transform: 'scale(1)' },
-                            '50%': { transform: 'scale(1.05)' },
-                        },
-                        popAndFade: {
-                            '0%': { opacity: 0, transform: 'translateY(0) scale(0.8)' },
-                            '20%': { opacity: 1, transform: 'translateY(-10px) scale(1.1)' },
-                            '100%': { opacity: 0, transform: 'translateY(-50px) scale(0.9)' },
-                        },
-                        atmosphereShift: {
-                            '0%': { transform: 'scale(1) translate(0%, 0%)', opacity: 0.8 },
-                            '50%': { transform: 'scale(1.1) translate(-5%, 5%)', opacity: 0.9 },
-                            '100%': { transform: 'scale(1) translate(0%, 0%)', opacity: 0.8 },
-                        }
-                    },
-                    animation: {
-                        fadeIn: 'fadeIn 2s ease-out forwards',
-                        pulseHeart: 'pulseHeart 2s ease-in-out infinite',
-                        popAndFade: 'popAndFade 1.5s ease-out forwards',
-                        atmosphereShift: 'atmosphereShift 30s ease-in-out infinite alternate',
-                    }
-                }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday, My Queen! ❤️</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'primary-pink': '#FF69B4',
+            'secondary-red': '#FF4500',
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          animation: {
+            fadeIn: 'fadeIn 2s ease-out forwards',
+            pulseHeart: 'pulseHeart 2s ease-in-out infinite',
+            atmosphereShift: 'atmosphereShift 30s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: 0, transform: 'scale(0.8)' },
+              '100%': { opacity: 1, transform: 'scale(1)' },
+            },
+            pulseHeart: {
+              '0%, 100%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.05)' },
+            },
+            atmosphereShift: {
+              '0%': { transform: 'scale(1) translate(0%, 0%)', opacity: 0.8 },
+              '50%': { transform: 'scale(1.1) translate(-5%, 5%)', opacity: 0.9 },
+              '100%': { transform: 'scale(1) translate(0%, 0%)', opacity: 0.8 },
             }
+          }
         }
-    </script>
-    <style>
-        /* --- CORE EFFECTS STYLES --- */
+      }
+    }
+  </script>
+  <style>
+    /* Reuse your heart, trail, and effect styles here (unchanged from your code) */
+    .heart-particle { position: absolute; background-color: var(--heart-color); width: var(--heart-size); height: var(--heart-size); border-radius: 50%; pointer-events: none; opacity: 0; z-index: 10; }
+    .heart-particle::before, .heart-particle::after { content: ""; position: absolute; background: inherit; width: inherit; height: inherit; border-radius: 50%; }
+    .heart-particle::before { top: calc(var(--heart-size) * -0.5); left: 0; }
+    .heart-particle::after { left: calc(var(--heart-size) * 0.5); top: 0; }
+    @keyframes float { 0%{transform:translateY(0) scale(1);opacity:0} 5%{opacity:1} 95%{opacity:1} 100%{transform:translateY(-100vh) scale(0.5);opacity:0} }
 
-        /* Floating Heart (Large, Main Effect) */
-        .heart-particle {
-            position: absolute;
-            background-color: var(--heart-color);
-            width: var(--heart-size);
-            height: var(--heart-size);
-            border-radius: 50%;
-            pointer-events: none;
-            opacity: 0;
-            z-index: 10;
-        }
+    .trail-particle { position:absolute; border-radius:50%; pointer-events:none; opacity:0; z-index:5; box-shadow:0 0 8px 3px var(--trail-color); animation: trailFade 1s ease-out forwards; }
+    @keyframes trailFade { 0%{opacity:1;transform:scale(0.2);}50%{opacity:0.8;transform:scale(1);}100%{opacity:0;transform:scale(0.5);} }
 
-        .heart-particle::before, .heart-particle::after {
-            content: "";
-            position: absolute;
-            background: inherit;
-            width: inherit;
-            height: inherit;
-            border-radius: 50%;
-        }
+    .touch-message { position:absolute; z-index:50; font-weight:bold; white-space:nowrap; pointer-events:none; }
 
-        .heart-particle::before { top: calc(var(--heart-size) * -0.5); left: 0; }
-        .heart-particle::after { left: calc(var(--heart-size) * 0.5); top: 0; }
-        
-        @keyframes float {
-            0% { transform: translateY(0vh) translateX(0%) scale(1); opacity: 0; }
-            5% { opacity: 1; }
-            95% { opacity: 1; }
-            100% { transform: translateY(-100vh) translateX(200px) scale(0.5); opacity: 0; }
-        }
-
-        /* --- NEW INTERACTIVE TRAIL STYLES --- */
-
-        /* Trail Particle (Small, Interactive Effect) */
-        .trail-particle {
-            position: absolute;
-            background-color: var(--trail-color);
-            border-radius: 50%;
-            pointer-events: none;
-            opacity: 0;
-            z-index: 5; /* Behind main text, but above background */
-            box-shadow: 0 0 8px 3px var(--trail-color); /* The glowing effect */
-            animation: trailFade 1s ease-out forwards;
-        }
-
-        @keyframes trailFade {
-            0% { opacity: 1; transform: scale(0.2); }
-            50% { opacity: 0.8; transform: scale(1); }
-            100% { opacity: 0; transform: scale(0.5); }
-        }
-
-        /* Interactive Message */
-        .touch-message {
-            position: absolute;
-            z-index: 50;
-            font-weight: bold;
-            white-space: nowrap;
-            pointer-events: none;
-        }
-
-        /* Romantic Atmosphere */
-        #romantic-atmosphere {
-            background: radial-gradient(circle at 50% 50%, 
-                rgba(255, 105, 180, 0.25) 0%, 
-                rgba(148, 0, 211, 0.2) 35%, 
-                rgba(0, 0, 0, 0.8) 70% 
-            );
-            filter: blur(100px);
-        }
-    </style>
+    #romantic-atmosphere { background: radial-gradient(circle at 50% 50%, rgba(255,105,180,0.25) 0%, rgba(148,0,211,0.2) 35%, rgba(0,0,0,0.8) 70%); filter: blur(100px);}
+  </style>
 </head>
 <body class="bg-black min-h-screen flex items-center justify-center p-4 overflow-hidden relative font-sans">
 
-    <!-- Romantic Atmosphere Layer (Z-index 0) -->
-    <div id="romantic-atmosphere" class="fixed inset-0 z-0 animate-atmosphereShift"></div>
-    
-    <!-- The main message container (Z-index 20) -->
-    <div class="text-center z-20">
-        <h1 class="text-6xl sm:text-7xl md:text-8xl font-extrabold text-primary-pink animate-fadeIn mb-6 animate-pulseHeart" 
-            style="animation-delay: 2s; text-shadow: 0 0 20px rgba(255, 105, 180, 1);">
-            Happy Birthday Wifey!
-        </h1>
-        <p class="text-2xl sm:text-3xl md:text-4xl text-white animate-fadeIn" 
-           style="animation-delay: 3s; text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);">
-            I love you so much ❤️
-        </p>
-    </div>
+  <!-- Romantic Glow -->
+  <div id="romantic-atmosphere" class="fixed inset-0 z-0 animate-atmosphereShift"></div>
 
-    <!-- JavaScript for all effects -->
-    <script>
-        const body = document.body;
-        const heartColors = ['#FFC0CB', '#FF1493', '#DC143C', '#DA70D6']; 
-        const trailColors = ['#FFFFFF', '#FFD700', '#FFB6C1']; 
+  <!-- Main Message -->
+  <div class="text-center z-20">
+    <h1 class="text-5xl sm:text-6xl md:text-7xl font-extrabold text-primary-pink animate-fadeIn mb-6 animate-pulseHeart"
+        style="animation-delay:2s; text-shadow:0 0 20px rgba(255,105,180,1);">
+      Happy Birthday Wifey!
+    </h1>
+    <p class="text-xl sm:text-2xl md:text-3xl text-white animate-fadeIn"
+       style="animation-delay:3s; text-shadow:0 0 10px rgba(255,255,255,0.7);">
+      I love you so much ❤️
+    </p>
+  </div>
 
-        // NEW: Audio state flag
-        let isAudioStarted = false;
-        let ambientSynth;
+  <!-- Music Play Overlay -->
+  <div id="music-overlay" class="fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50">
+    <p class="text-white text-2xl mb-4">💖 Tap to start the surprise 💖</p>
+    <button onclick="startMusic()" class="px-6 py-3 bg-primary-pink text-white rounded-full text-lg font-bold shadow-lg animate-pulse">
+      Play Music 🎶
+    </button>
+  </div>
 
-        // --- NEW: AUDIO LOGIC (TONE.JS) ---
+  <!-- Audio -->
+  <audio id="bg-music" loop>
+    <source src="https://raw.githubusercontent.com/ryzen-7/birthday/refs/heads/main/Khuda%20Aur%20Mohabbat%20Rahat%20Fateh%20Ali%20Khan%20320%20Kbps%20(1)-%5BAudioTrimmer.com%5D.mp3" type="audio/mpeg">
+  </audio>
 
-        function setupMusic() {
-            // A simple, sustained synth sound for a calm atmosphere
-            ambientSynth = new Tone.PolySynth(Tone.Synth, {
-                oscillator: { type: "sine" },
-                envelope: {
-                    attack: 4,
-                    decay: 1,
-                    sustain: 0.9,
-                    release: 6
-                },
-                volume: -15 // Keep it soft
-            }).toDestination();
-            
-            // Apply a wide reverb for a dreamy feel
-            const reverb = new Tone.Reverb({ decay: 6, predelay: 0.1 }).toDestination();
-            ambientSynth.connect(reverb);
-        }
+  <script>
+    const body = document.body;
+    const heartColors = ['#FFC0CB','#FF1493','#DC143C','#DA70D6'];
+    const trailColors = ['#FFFFFF','#FFD700','#FFB6C1'];
 
-        function startMusic() {
-            if (isAudioStarted) return;
-            isAudioStarted = true;
-            
-            // Tone.start() ensures audio context is running on user interaction
-            Tone.start(); 
-            
-            // Create a slow, looping pattern for the background mood
-            const notes = ["C3", "E3", "G3", "A3"];
-            
-            new Tone.Loop(time => {
-                // Play a random chord softly
-                ambientSynth.triggerAttackRelease(
-                    [notes[Math.floor(Math.random() * notes.length)], "C4"], 
-                    "4n", 
-                    time, 
-                    0.5 // velocity
-                );
-            }, "2n").start(0); // Loop every 2 half notes
+    function createHeart(){ const heart=document.createElement('div'); heart.classList.add('heart-particle'); const size=Math.floor(Math.random()*20)+10; const color=heartColors[Math.floor(Math.random()*heartColors.length)]; const duration=Math.random()*10+5; heart.style.setProperty('--heart-size',`${size}px`); heart.style.setProperty('--heart-color',color); const startX=Math.random()*(window.innerWidth-size); const startY=window.innerHeight; heart.style.left=`${startX}px`; heart.style.top=`${startY}px`; heart.style.animation=`float ${duration}s ease-in forwards`; body.appendChild(heart); setTimeout(()=>heart.remove(),duration*1000);}
+    setInterval(createHeart,200);
 
-            // Start the main transport
-            Tone.Transport.start();
-        }
+    // Touch message
+    function createTouchMessage(event){ const x=event.clientX||(event.touches?event.touches[0].clientX:0); const y=event.clientY||(event.touches?event.touches[0].clientY:0); if(!x||!y) return; const msg=document.createElement('div'); msg.textContent="I love you so much! 🥰"; msg.classList.add('touch-message','text-lg','sm:text-xl','text-primary-pink','animate-fadeIn'); msg.style.left=`${x-80}px`; msg.style.top=`${y-20}px`; body.appendChild(msg); setTimeout(()=>msg.remove(),1500);}
+    body.addEventListener('click',createTouchMessage); body.addEventListener('touchstart',createTouchMessage);
 
-        // --- CORE HEART GENERATION LOGIC ---
+    // Trail effect
+    function createTrail(x,y){ const particle=document.createElement('div'); particle.classList.add('trail-particle'); const size=Math.floor(Math.random()*5)+3; const color=trailColors[Math.floor(Math.random()*trailColors.length)]; particle.style.width=`${size}px`; particle.style.height=`${size}px`; particle.style.setProperty('--trail-color',color); particle.style.left=`${x-size/2}px`; particle.style.top=`${y-size/2}px`; body.appendChild(particle); setTimeout(()=>particle.remove(),1000);}
+    function handleMove(event){ if(event.type==='touchmove'||event.buttons===1){ const x=event.clientX||(event.touches?event.touches[0].clientX:0); const y=event.clientY||(event.touches?event.touches[0].clientY:0); if(x&&y) createTrail(x,y);}}
+    body.addEventListener('mousemove',handleMove); body.addEventListener('touchmove',handleMove);
 
-        function createHeart(isBurst = false, x = 0, y = 0) {
-            const heart = document.createElement('div');
-            heart.classList.add('heart-particle');
-
-            const size = Math.floor(Math.random() * 20) + 10;
-            const color = heartColors[Math.floor(Math.random() * heartColors.length)];
-            let duration = Math.random() * 10 + 5; 
-
-            heart.style.setProperty('--heart-size', `${size}px`);
-            heart.style.setProperty('--heart-color', color);
-
-            if (isBurst) {
-                // Burst effect: hearts fly out from the center
-                duration = Math.random() * 2 + 1; // Short burst duration
-                heart.style.top = `${window.innerHeight / 2}px`;
-                heart.style.left = `${window.innerWidth / 2}px`;
-                
-                // Randomize trajectory and scale
-                const burstX = Math.random() * 400 - 200; // -200 to 200
-                const burstY = Math.random() * 400 - 200;
-                heart.style.animation = `burst ${duration}s ease-out forwards`;
-
-                // Add temporary burst keyframes dynamically
-                const styleSheet = document.styleSheets[0];
-                try {
-                    // Check if keyframe already exists to prevent error logs
-                    if (!styleSheet.cssRules.length || !Array.from(styleSheet.cssRules).some(rule => rule.name === 'burst')) {
-                        styleSheet.insertRule(`
-                            @keyframes burst {
-                                0% { transform: translate(0, 0) scale(1); opacity: 1; }
-                                100% { transform: translate(${burstX}px, ${burstY}px) scale(0.1); opacity: 0; }
-                            }
-                        `, styleSheet.cssRules.length);
-                    }
-                } catch (e) { console.error("Could not insert burst keyframe."); }
-            } else {
-                // Floating effect
-                const startX = Math.random() * (window.innerWidth - size);
-                const startY = window.innerHeight;
-                heart.style.left = `${startX}px`;
-                heart.style.top = `${startY}px`;
-                heart.style.animation = `float ${duration}s ease-in forwards`;
-            }
-            
-            body.appendChild(heart);
-
-            setTimeout(() => { heart.remove(); }, duration * 1000);
-        }
-
-        // --- HEART BURST AND SHOWER TRIGGERS ---
-        function triggerHeartBurst() {
-            const burstCount = 80;
-            for (let i = 0; i < burstCount; i++) {
-                setTimeout(() => createHeart(true), i * 10); 
-            }
-        }
-
-        function startHeartShower() {
-            const showerInterval = setInterval(createHeart, 150); 
-            setTimeout(() => { clearInterval(showerInterval); }, 60000); 
-        }
-
-        setTimeout(triggerHeartBurst, 4000); 
-        setTimeout(startHeartShower, 4500); 
-
-
-        // --- INTERACTIVE TOUCH/CLICK MESSAGE LOGIC ---
-        function createTouchMessage(event) {
-            // NEW: Start the music on the very first touch/click (crucial for iPhone/mobile)
-            if (!isAudioStarted) {
-                startMusic();
-            }
-
-            const x = event.clientX || (event.touches ? event.touches[0].clientX : 0);
-            const y = event.clientY || (event.touches ? event.touches[0].clientY : 0);
-            if (!x || !y) return; 
-
-            const message = document.createElement('div');
-            message.textContent = "I love you so much! 🥰";
-            message.classList.add(
-                'touch-message', 'text-lg', 'sm:text-xl', 'text-primary-pink', 'shadow-lg', 'animate-popAndFade' 
-            );
-            
-            message.style.left = `${x - 100}px`; 
-            message.style.top = `${y - 20}px`;
-            message.style.textShadow = '0 0 10px rgba(255, 105, 180, 1)';
-
-            body.appendChild(message);
-            setTimeout(() => { message.remove(); }, 1500); 
-        }
-
-        // Attach event listeners for the single message tap
-        document.body.addEventListener('click', createTouchMessage);
-        document.body.addEventListener('touchstart', createTouchMessage);
-
-
-        // --- INTERACTIVE MOUSE/TOUCH TRAIL LOGIC ---
-        function createTrailParticle(x, y) {
-            const particle = document.createElement('div');
-            particle.classList.add('trail-particle');
-
-            const size = Math.floor(Math.random() * 5) + 3;
-            const color = trailColors[Math.floor(Math.random() * trailColors.length)];
-            
-            particle.style.width = `${size}px`;
-            particle.style.height = `${size}px`;
-            particle.style.setProperty('--trail-color', color);
-
-            particle.style.left = `${x - size / 2}px`;
-            particle.style.top = `${y - size / 2}px`;
-
-            body.appendChild(particle);
-            setTimeout(() => { particle.remove(); }, 1000); 
-        }
-
-        function handleMove(event) {
-            // Check if it's a touch move OR a mouse move while a button is pressed
-            if (event.type === 'touchmove' || event.buttons === 1) { 
-                event.preventDefault(); 
-                const x = event.clientX || (event.touches ? event.touches[0].clientX : 0);
-                const y = event.clientY || (event.touches ? event.touches[0].clientY : 0);
-                if (x && y) {
-                    createTrailParticle(x, y);
-                }
-            }
-        }
-        
-        document.body.addEventListener('mousemove', handleMove);
-        document.body.addEventListener('touchmove', handleMove);
-
-        // Setup the music as soon as the window loads, but don't start it yet
-        window.onload = setupMusic;
-        
-    </script>
+    // Music
+    function startMusic(){ document.getElementById('bg-music').play(); document.getElementById('music-overlay').style.display='none'; }
+  </script>
 </body>
 </html>
