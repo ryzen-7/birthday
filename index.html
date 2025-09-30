@@ -6,6 +6,8 @@
     <title>Happy Birthday, My Queen! ❤️</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- NEW: Tone.js for generating background music -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -141,10 +143,56 @@
     <!-- JavaScript for all effects -->
     <script>
         const body = document.body;
-        // Heart colors are slightly brighter for better visibility
         const heartColors = ['#FFC0CB', '#FF1493', '#DC143C', '#DA70D6']; 
-        // Trail colors for a starry effect
         const trailColors = ['#FFFFFF', '#FFD700', '#FFB6C1']; 
+
+        // NEW: Audio state flag
+        let isAudioStarted = false;
+        let ambientSynth;
+
+        // --- NEW: AUDIO LOGIC (TONE.JS) ---
+
+        function setupMusic() {
+            // A simple, sustained synth sound for a calm atmosphere
+            ambientSynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: "sine" },
+                envelope: {
+                    attack: 4,
+                    decay: 1,
+                    sustain: 0.9,
+                    release: 6
+                },
+                volume: -15 // Keep it soft
+            }).toDestination();
+            
+            // Apply a wide reverb for a dreamy feel
+            const reverb = new Tone.Reverb({ decay: 6, predelay: 0.1 }).toDestination();
+            ambientSynth.connect(reverb);
+        }
+
+        function startMusic() {
+            if (isAudioStarted) return;
+            isAudioStarted = true;
+            
+            // Tone.start() ensures audio context is running on user interaction
+            Tone.start(); 
+            
+            // Create a slow, looping pattern for the background mood
+            const notes = ["C3", "E3", "G3", "A3"];
+            
+            new Tone.Loop(time => {
+                // Play a random chord softly
+                ambientSynth.triggerAttackRelease(
+                    [notes[Math.floor(Math.random() * notes.length)], "C4"], 
+                    "4n", 
+                    time, 
+                    0.5 // velocity
+                );
+            }, "2n").start(0); // Loop every 2 half notes
+
+            // Start the main transport
+            Tone.Transport.start();
+        }
 
         // --- CORE HEART GENERATION LOGIC ---
 
@@ -173,12 +221,15 @@
                 // Add temporary burst keyframes dynamically
                 const styleSheet = document.styleSheets[0];
                 try {
-                    styleSheet.insertRule(`
-                        @keyframes burst {
-                            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-                            100% { transform: translate(${burstX}px, ${burstY}px) scale(0.1); opacity: 0; }
-                        }
-                    `, styleSheet.cssRules.length);
+                    // Check if keyframe already exists to prevent error logs
+                    if (!styleSheet.cssRules.length || !Array.from(styleSheet.cssRules).some(rule => rule.name === 'burst')) {
+                        styleSheet.insertRule(`
+                            @keyframes burst {
+                                0% { transform: translate(0, 0) scale(1); opacity: 1; }
+                                100% { transform: translate(${burstX}px, ${burstY}px) scale(0.1); opacity: 0; }
+                            }
+                        `, styleSheet.cssRules.length);
+                    }
                 } catch (e) { console.error("Could not insert burst keyframe."); }
             } else {
                 // Floating effect
@@ -194,28 +245,30 @@
             setTimeout(() => { heart.remove(); }, duration * 1000);
         }
 
-        // --- NEW: HEART BURST ON PAGE LOAD ---
+        // --- HEART BURST AND SHOWER TRIGGERS ---
         function triggerHeartBurst() {
-            const burstCount = 80; // Number of hearts in the burst
+            const burstCount = 80;
             for (let i = 0; i < burstCount; i++) {
-                // Delay each heart slightly for a dispersed effect
                 setTimeout(() => createHeart(true), i * 10); 
             }
         }
 
-        // Regular heart shower (slower, continuous floating)
         function startHeartShower() {
             const showerInterval = setInterval(createHeart, 150); 
             setTimeout(() => { clearInterval(showerInterval); }, 60000); 
         }
 
-        // Start effects after main text animation finishes
         setTimeout(triggerHeartBurst, 4000); 
         setTimeout(startHeartShower, 4500); 
 
 
         // --- INTERACTIVE TOUCH/CLICK MESSAGE LOGIC ---
         function createTouchMessage(event) {
+            // NEW: Start the music on the very first touch/click (crucial for iPhone/mobile)
+            if (!isAudioStarted) {
+                startMusic();
+            }
+
             const x = event.clientX || (event.touches ? event.touches[0].clientX : 0);
             const y = event.clientY || (event.touches ? event.touches[0].clientY : 0);
             if (!x || !y) return; 
@@ -239,34 +292,29 @@
         document.body.addEventListener('touchstart', createTouchMessage);
 
 
-        // --- NEW: INTERACTIVE MOUSE/TOUCH TRAIL LOGIC ---
-        let isTouching = false;
-
+        // --- INTERACTIVE MOUSE/TOUCH TRAIL LOGIC ---
         function createTrailParticle(x, y) {
             const particle = document.createElement('div');
             particle.classList.add('trail-particle');
 
-            const size = Math.floor(Math.random() * 5) + 3; // 3px to 8px
+            const size = Math.floor(Math.random() * 5) + 3;
             const color = trailColors[Math.floor(Math.random() * trailColors.length)];
             
             particle.style.width = `${size}px`;
             particle.style.height = `${size}px`;
             particle.style.setProperty('--trail-color', color);
 
-            // Position centered on the cursor/touch point
             particle.style.left = `${x - size / 2}px`;
             particle.style.top = `${y - size / 2}px`;
 
             body.appendChild(particle);
-
-            // Particle removal matches its fade animation duration
             setTimeout(() => { particle.remove(); }, 1000); 
         }
 
         function handleMove(event) {
-            // Check if it's a touch move OR a mouse move after the body is clicked
+            // Check if it's a touch move OR a mouse move while a button is pressed
             if (event.type === 'touchmove' || event.buttons === 1) { 
-                event.preventDefault(); // Prevent scrolling on touch devices
+                event.preventDefault(); 
                 const x = event.clientX || (event.touches ? event.touches[0].clientX : 0);
                 const y = event.clientY || (event.touches ? event.touches[0].clientY : 0);
                 if (x && y) {
@@ -275,9 +323,11 @@
             }
         }
         
-        // Use move events to continuously create the trail
         document.body.addEventListener('mousemove', handleMove);
         document.body.addEventListener('touchmove', handleMove);
+
+        // Setup the music as soon as the window loads, but don't start it yet
+        window.onload = setupMusic;
         
     </script>
 </body>
